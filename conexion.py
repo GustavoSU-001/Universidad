@@ -1,16 +1,17 @@
 import pymysql
-def Conexion(self):
+
+class Conexion():
     def __init__(self):
         
-        self.db = pymysql.connect(
+        self.conn = pymysql.connect(
             host='localhost',
             user='root',
             password='',
             database='bd_uni',
             cursorclass=pymysql.cursors.DictCursor
         )
-        self.cursor = self.db.cursor()
-    
+        self.cursor = self.conn.cursor()
+        
     #
     #
     #if tipo in ['delete','select']:
