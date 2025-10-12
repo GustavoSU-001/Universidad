@@ -92,24 +92,21 @@ class Gustavo():
                 db.conn.commit()
                 db.conn.close()
                 
-    def ProfesorCurso(self, rut_profesor, cant_cursos):
+    def ProfesorCurso(self, id_curso):
         db=Conexion()
-        cursos=[]
         
-        while len(cursos) < cant_cursos:
-            query = "SELECT ID FROM curso ORDER BY RAND() LIMIT 1"
-            db.cursor.execute(query)
-            resultado = db.cursor.fetchall()
-            db.conn.close()
-            id_curso = resultado[0]['id']
-            fecha_agregado = self.faker.date_between(start_date='-10y', end_date='today')
-            if id_curso not in cursos:
-                cursos.append(id_curso)
-                query = fr"INSERT INTO profesor_curso (Rut_Profesor, ID_Curso, Fecha_Agregado) VALUES ({rut_profesor}, {id_curso}, '{fecha_agregado}')"
-                db.cursor.execute(query)
-                db.conn.commit()
-                db.conn.close()
-                
+        query = "SELECT Rut_Profesor FROM profesor ORDER BY RAND() LIMIT 1"
+        db.cursor.execute(query)
+        resultado = db.cursor.fetchall()
+        rut_profesor = resultado[0]['Rut_Profesor']
+        fecha_asignacion = self.faker.date_between(start_date='-10y', end_date='today')
+        db.cursor.execute("INSERT INTO profesor_curso (ID_Curso, Rut_Profesor, Fecha_Agregado) VALUES (%s, %s, %s)", (id_curso, rut_profesor, fecha_asignacion))
+        
+        db.conn.commit()
+        db.conn.close()
+        
+        
+        
                 
                 
         
