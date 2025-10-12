@@ -41,7 +41,8 @@ class Gustavo():
                 
         
         db=Conexion()
-        query = fr"INSERT INTO titulo (nombre) VALUES ('{titulo}')"
+        especialidad = self.faker.job()
+        query = fr"INSERT INTO titulo (nombre,especialidad) VALUES ('{titulo}', '{especialidad}')"
         db.cursor.execute(query)
         db.conn.commit()
         db.conn.close()
@@ -95,12 +96,20 @@ class Gustavo():
     def ProfesorCurso(self, id_curso):
         db=Conexion()
         
+        
         query = "SELECT Rut_Profesor FROM profesor ORDER BY RAND() LIMIT 1"
         db.cursor.execute(query)
         resultado = db.cursor.fetchall()
         rut_profesor = resultado[0]['Rut_Profesor']
-        fecha_asignacion = self.faker.date_between(start_date='-10y', end_date='today')
-        db.cursor.execute("INSERT INTO profesor_curso (ID_Curso, Rut_Profesor, Fecha_Agregado) VALUES (%s, %s, %s)", (id_curso, rut_profesor, fecha_asignacion))
+        
+        query = fr"Select Año from curso where ID_Curso={id_curso}"
+        db.cursor.execute(query)
+        resultado = db.cursor.fetchall()
+        año_curso = resultado[0]['Año']
+        año_rango=self.faker.date_between(start_date="today", end_date='today').year - año_curso
+        
+        fecha_asignacion = self.faker.date_between(start_date=f'-{año_rango}y', end_date='today')
+        db.cursor.execute("INSERT INTO profesor_curso (Rut_Profesor, ID_Curso, Fecha_Agregado) VALUES (%s, %s, %s)", (rut_profesor,id_curso, fecha_asignacion))
         
         db.conn.commit()
         db.conn.close()
@@ -115,13 +124,13 @@ class Gustavo():
 
 
 
-g=Gustavo()
-print("Creando Titulos...")
-for i in range(50):
-    g.Titulo()
-print("Creando Profesores...")
-for j in range(100):
-    g.Profesor()
+#g=Gustavo()
+#print("Creando Titulos...")
+#for i in range(50):
+#    g.Titulo()
+#print("Creando Profesores...")
+#for j in range(100):
+#    g.Profesor()
 
 
 
