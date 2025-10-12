@@ -6,7 +6,7 @@ def Conexion(self):
             host='localhost',
             user='root',
             password='',
-            database='ev1_inteligencianegocios',
+            database='bd_uni',
             cursorclass=pymysql.cursors.DictCursor
         )
         self.cursor = self.db.cursor()
