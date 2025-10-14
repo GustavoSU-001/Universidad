@@ -2,6 +2,8 @@ import pymysql
 import random
 from faker import Faker
 from Gustavo import Gustavo
+import Guillermo
+from datetime import date
 
 faker = Faker('es_CL')
 
@@ -262,57 +264,13 @@ for carrera in carreras:
         carreras_por_especialidad[esp].append(carrera)
 
 
-g=Gustavo()
-print("Creando Titulos...")
-for i in range(50):
-    g.Titulo()
-print("Creando Profesores...")
-for j in range(100):
-    g.Profesor()
-
-# Insertar 50 cursos por especialidad
-for especialidad, carreras_esp in carreras_por_especialidad.items():
-    for _ in range(50):
-        carrera = random.choice(carreras_esp)
-        nombre_curso = random.choice(asignaturas_por_especialidad.get(especialidad, ["Curso General"]))
-        seccion = generar_seccion(carrera['Nombre'])
-        hora_total = faker.time(pattern="%H:%M:%S")
-        capacidad_max = random.randint(20, 60)
-        año = random.randint(2020, 2025)
-        max_semestre = carrera['Semestre_Total']
-        semestre = max_semestre - random.randint(0, max_semestre - 1)
-        cursor.execute("""INSERT INTO curso 
-            (Nombre, Especialidad, Seccion, Hora_Total, Capacidad_Max, Año, Semestre, ID_Carrera) 
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
-            (nombre_curso, especialidad, seccion, hora_total, capacidad_max, año, semestre, carrera['ID_Carrera']))
-        id_curso = cursor.lastrowid
-        db.commit()
-        g.ProfesorCurso(id_curso)
-
-import Guillermo
-
-print("Se han generado 50 cursos")
-
-import pymysql
-import random
-
-# Conexión a la base de datos
-db = pymysql.connect(
-    host='localhost',
-    user='root',
-    password='',
-    database='bd_uni',
-    cursorclass=pymysql.cursors.DictCursor
-)
-cursor = db.cursor()
-
 # Limpieza de tabla sala
 cursor.execute('DELETE FROM sala')
 cursor.execute('ALTER TABLE sala AUTO_INCREMENT = 1')
 db.commit()
 
 # Configuración
-total_salas = 100
+total_salas = 800
 tipos = []
 
 # Distribución proporcional
@@ -344,38 +302,130 @@ for tipo in tipos:
     
     cursor.execute("INSERT INTO sala (Tipo, Piso) VALUES (%s, %s)", (tipo, piso))
 db.commit()
-
 print("Salas generadas con distribución proporcional y lógica de piso.")
+
+import pymysql
+import random
+
+# Conexión a la base de datos
+db = pymysql.connect(
+    host='localhost',
+    user='root',
+    password='',
+    database='bd_uni',
+    cursorclass=pymysql.cursors.DictCursor
+)
+cursor = db.cursor()
+
+# Limpieza de tabla sala
+#cursor.execute('DELETE FROM sala')
+#cursor.execute('ALTER TABLE sala AUTO_INCREMENT = 1')
+#db.commit()
+
+# Configuración
+#total_salas = 800
+#tipos = []
+
+# Distribución proporcional
+#tipos += ["Sala General"] * int(total_salas * 0.4)
+#tipos += ["Laboratorio de Computación"] * int(total_salas * 0.3)
+#tipos += ["Sala Especializada"] * (total_salas - len(tipos))  # lo que falte
+#Se generaran un 40% de salas generales, 40% de Laboratorios de computacion y lo que falta pues a terreno 
+
+
+# Insertar salas
+#for tipo in tipos:
+#    if tipo == "Sala General":
+
+
+        #Se meten las salas generales del piso 1 al 3 como en inacap :V
+        #piso = random.choice([1, 2, 3])
+
+
+   # elif tipo == "Laboratorio de Computación":
+
+        #Todos los laboratorios estan en el piso 0 
+    #    piso = 0
+    #else:  # Sala Especializada
+
+        #Creo que estas salas estan en cada piso por eso del 0 al 3
+
+    #    piso = random.choice([0, 1, 2, 3])
+    
+    
+    #cursor.execute("INSERT INTO sala (Tipo, Piso) VALUES (%s, %s)", (tipo, piso))
+#db.commit()
+
+#print("Salas generadas con distribución proporcional y lógica de piso.")
         
-
+def Curso_Sala(id_curso,año):
 # Obtener todos los cursos y salas
-cursor.execute("SELECT ID_Curso FROM curso")
-cursos = cursor.fetchall()
+#cursor.execute("SELECT ID_Curso FROM curso")
+#cursos = cursor.fetchall()
 
-cursor.execute("SELECT Codigo_Sala FROM sala")
-salas = cursor.fetchall()
+    cursor.execute("SELECT Codigo_Sala FROM sala ORDER BY RAND() LIMIT 1")
+    datos=cursor.fetchall()[0]["Codigo_Sala"]
+    salas = datos
 
 # Verificación
-if not cursos or not salas:
-    print("No hay cursos o salas disponibles")
-else:
+#if not cursos or not salas:
+#    print("No hay cursos o salas disponibles")
+#else:
     # Asignar una sala aleatoria a cada curso
-    for curso in cursos:
-        id_curso = curso['ID_Curso']
-        sala = random.choice(salas)['Codigo_Sala']
-        fecha = faker.date_time_between(start_date='-1y', end_date='+3m')
-        
-        cursor.execute("""INSERT INTO curso_sala 
-            (Codigo_Sala, ID_Curso, Fecha) 
-            VALUES (%s, %s, %s)""",
-            (sala, id_curso, fecha))
+    #for curso in cursos:
+    #id_curso = curso['ID_Curso']
+    #sala = random.choice(salas)['Codigo_Sala']
+    fecha = faker.date_time_between(start_date=date(año,1,1), end_date=date(año,4,30))
+    
+    cursor.execute("""INSERT INTO curso_sala 
+        (Codigo_Sala, ID_Curso, Fecha) 
+        VALUES (%s, %s, %s)""",
+        (salas, id_curso, fecha))
     db.commit()
-    print("Cada curso ha sido asignado a una sala con fecha única.")
 
 
 
 #La idea es que todos los cursos disponibles se les asignara una sala al azar
 #Se tomaran todos los cursos disponibles para asignarles una sala :V
+
+g=Gustavo()
+print("Creando Titulos...")
+for i in range(10500):
+    g.Titulo()
+print("Creando Profesores...")
+for j in range(10500):
+    g.Profesor()
+
+# Insertar 50 cursos por especialidad
+for especialidad, carreras_esp in carreras_por_especialidad.items():
+    print(f"Insertando cursos para la especialidad: {especialidad}")
+    print("Ademas se asignaran profesores y alumnos a los cursos")
+    print("Esto puede tardar unos minutos, por favor espere...")
+    for _ in range(2500):
+        carrera = random.choice(carreras_esp)
+        nombre_curso = random.choice(asignaturas_por_especialidad.get(especialidad, ["Curso General"]))
+        seccion = generar_seccion(carrera['Nombre'])
+        hora_total = faker.time(pattern="%H:%M:%S")
+        capacidad_max = random.randint(20, 60)
+        año = faker.date_time_between(start_date="-10y",end_date="now").year #random.randint(2020, 2025)
+        max_semestre = carrera['Semestre_Total']
+        semestre = max_semestre - random.randint(0, max_semestre - 1)
+        cursor.execute("""INSERT INTO curso 
+            (Nombre, Especialidad, Seccion, Hora_Total, Capacidad_Max, Año, Semestre, ID_Carrera) 
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
+            (nombre_curso, especialidad, seccion, hora_total, capacidad_max, año, semestre, carrera['ID_Carrera']))
+        id_curso = cursor.lastrowid
+        db.commit()
+        g.ProfesorCurso(id_curso)
+        Guillermo.Curso_Alumno(id_curso)
+        Guillermo.Curso_TipoClase(id_curso)
+        Curso_Sala(id_curso,año)
+
+
+
+print("Se han generado 50 cursos")
+
+
 
 
 

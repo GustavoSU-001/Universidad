@@ -75,7 +75,6 @@ class Gustavo():
         
         
     def ProfesorTitulo(self, rut_profesor, cant_titulos):
-        print(f"Asignandole Titulo a Profesor: {rut_profesor}")
         titulos=[]
         
         while len(titulos) < cant_titulos:
@@ -96,20 +95,28 @@ class Gustavo():
     def ProfesorCurso(self, id_curso):
         db=Conexion()
         
-        
-        query = "SELECT Rut_Profesor FROM profesor ORDER BY RAND() LIMIT 1"
-        db.cursor.execute(query)
-        resultado = db.cursor.fetchall()
-        rut_profesor = resultado[0]['Rut_Profesor']
-        
+
         query = fr"Select Año from curso where ID_Curso={id_curso}"
         db.cursor.execute(query)
         resultado = db.cursor.fetchall()
         año_curso = resultado[0]['Año']
         año_rango=self.faker.date_between(start_date="today", end_date='today').year - año_curso
         
-        fecha_asignacion = self.faker.date_between(start_date=f'-{año_rango}y', end_date='today')
-        db.cursor.execute("INSERT INTO profesor_curso (Rut_Profesor, ID_Curso, Fecha_Agregado) VALUES (%s, %s, %s)", (rut_profesor,id_curso, fecha_asignacion))
+        cant_asignaciones=self.faker.random_int(min=1, max=3)
+        for _ in range(cant_asignaciones):
+            query = "SELECT Rut_Profesor FROM profesor ORDER BY RAND() LIMIT 1"
+            db.cursor.execute(query)
+            resultado = db.cursor.fetchall()
+            rut_profesor = resultado[0]['Rut_Profesor']
+            
+            db.cursor.execute(fr"SELECT ID_Profesor_Curso FROM profesor_curso WHERE Rut_Profesor=%s AND ID_Curso=%s", (rut_profesor,id_curso))
+            resultado = db.cursor.fetchall()
+            if len(resultado) > 0:
+                continue
+            
+            fecha_asignacion = self.faker.date_between(start_date=f'-{año_rango}y', end_date='today')
+            db.cursor.execute("INSERT INTO profesor_curso (Rut_Profesor, ID_Curso, Fecha_Agregado) VALUES (%s, %s, %s)", (rut_profesor,id_curso, fecha_asignacion))
+        
         
         db.conn.commit()
         db.conn.close()
